@@ -55,6 +55,7 @@ def monitor_loop(wiki):
                     pass # its in both, do nothing
                 else:
                     log_event('delete', page)
+                    pages.pop(page) # remove the rm'd page from our global pages
                     msg_delete(page)
             # now we do the same disgusting logic in reverse to find created pages
             for page in new_pagelist:
@@ -62,8 +63,8 @@ def monitor_loop(wiki):
                     pass # its in both, do nothing
                 else:
                     log_event('create', page)
-                    msg_create(page)
-        pages = new_pagelist # this SHOULD overwrite the variable pages. I hope.
+                    pages.append(page) # add the new page
+                    msg_create(page).
         else:
             msg_status("%s: No change, sleeping for 5 minutes." %(time.time()))
             time.sleep(300) # sleep for 5 minutes
