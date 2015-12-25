@@ -20,6 +20,9 @@ def msg_status(msg):
     # status messages about state of program itself.
     print "%s{*} %s%s" %(BLUE, msg, CLEAR)
 
+def msg_warning(msg):
+    print "%s{#} %s%s" %(RED, msg, CLEAR)
+
 def msg_abort(msg):
     # fatal errors and stack traces. aborts.
     sys.exit("%s{!} Fatal Exception has been hit, quitting with stack trace.\n %s%s" %(RED, msg, CLEAR))
@@ -43,31 +46,36 @@ def monitor_loop(wiki):
     # now we poke it every 5 minutes to find pages missing or present
     while True:
         new_pagelist = []
-        for page in wiki.allpages():
-            new_pagelist.append(page.name)
-        # first we check if there is any difference at all...
-        if cmp(pages, new_pagelist) != 0:
-            # ok, if we get here, its non zero, so something changed.
-            # now for the horrible comparison. lets see if any items in list 1
-            # are NOT in list 2. this is how we determine if a page was purged
-            for page in pages:
-                if page in new_pagelist:
-                    pass # its in both, do nothing
-                else:
-                    log_event('delete', page)
-                    pages.pop(page) # remove the rm'd page from our global pages
-                    msg_delete(page)
-            # now we do the same disgusting logic in reverse to find created pages
-            for page in new_pagelist:
-                if page in pages:
-                    pass # its in both, do nothing
-                else:
-                    log_event('create', page)
-                    pages.append(page) # add the new page
-                    msg_create(page)
-        else:
-            msg_status("%s: No change, sleeping for 5 minutes." %(time.time()))
-            time.sleep(300) # sleep for 5 minutes
+        try:
+            for page in wiki.allpages():
+                new_pagelist.append(page.name)
+            # first we check if there is any difference at all...
+            if cmp(pages, new_pagelist) != 0:
+                # ok, if we get here, its non zero, so something changed.
+                # now for the horrible comparison. lets see if any items in list 1
+                # are NOT in list 2. this is how we determine if a page was purged
+                for page in pages:
+                    if page in new_pagelist:
+                        pass # its in both, do nothing
+                    else:
+                        log_event('delete', page)
+                        pages.pop(page) # remove the rm'd page from our global pages
+                        msg_delete(page)
+                # now we do the same disgusting logic in reverse to find created pages
+                for page in new_pagelist:
+                    if page in pages:
+                        pass # its in both, do nothing
+                    else:
+                        log_event('create', page)
+                        pages.append(page) # add the new page
+                        msg_create(page)
+            else:
+                msg_status("%s: No change, sleeping for 5 minutes." %(time.time()))
+                time.sleep(300) # sleep for 5 minutes
+        except mwclient.errors.InvalidResponse: # its down!
+            msg_warning("Pacotes!") # server is kill. rip server
+            log_event('pacotes', 'None')
+            time.sleep(120) # sleep only for 2 minutes for pacote errors.
 
 def log_event(event_type, page_name):
     # we want to log if pages were created or expunged, for fun.
