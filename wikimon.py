@@ -4,7 +4,7 @@ import mwclient # mediawiki library.
 import json # because why not use json.
 import sys # sys.exit and sys.argv
 import urlparse # because mwclient can't daelwae urls
-import time
+import time # because we like timey wimey wibbley wobbley stuffs
 
 # colours, because everything is better with colours.
 RED = "\x1b[1;31m" # fatal errors
@@ -21,6 +21,7 @@ def msg_status(msg):
     print "%s{*} %s%s" %(BLUE, msg, CLEAR)
 
 def msg_warning(msg):
+    # tl;dr if the wiki doesn't respond.
     print "%s{#} %s%s" %(RED, msg, CLEAR)
 
 def msg_abort(msg):
@@ -39,15 +40,15 @@ def msg_delete(msg):
 def monitor_loop(wiki):
     # monitors for page create/delete instances. alerts.
     msg_status("Entering Monitor Loop... Populating the initial list.")
-    pages = []
-    for page in wiki.allpages():
-        pages.append(page.name)
+    pages = [] # list for pages
+    for page in wiki.allpages(): # loop
+        pages.append(page.name) # populate the list
     msg_status("Got initial list of pages...")
     # now we poke it every 5 minutes to find pages missing or present
     while True:
-        new_pagelist = []
+        new_pagelist = [] # and we do it again. we are comparing two lists, basically. badly.
         try:
-            for page in wiki.allpages():
+            for page in wiki.allpages(): # this can error if the wiki is down so we have it in try/except
                 new_pagelist.append(page.name)
             # first we check if there is any difference at all...
             if cmp(pages, new_pagelist) != 0:
