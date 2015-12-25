@@ -39,7 +39,7 @@ def monitor_loop(wiki):
     pages = []
     for page in wiki.allpages():
         pages.append(page.name)
-    print 'got initial pages list'
+    msg_status("Got initial list of pages...")
     # now we poke it every 5 minutes to find pages missing or present
     while True:
         new_pagelist = []
@@ -64,7 +64,7 @@ def monitor_loop(wiki):
                 else:
                     log_event('create', page)
                     pages.append(page) # add the new page
-                    msg_create(page).
+                    msg_create(page)
         else:
             msg_status("%s: No change, sleeping for 5 minutes." %(time.time()))
             time.sleep(300) # sleep for 5 minutes
